@@ -84,7 +84,9 @@ config = {'No.': now,
 # ******************** 开发集数据读取 ****************************
 dev_img, dev_label = read_decode(dev_file_path, epoch_num)
 dev_img1 = tf.reshape(dev_img, [image_height, image_width, image_channel])
+# 添加 标准化 模块
 dev_img2 = tf.image.per_image_standardization(dev_img1)  # 标准化
+
 dev_img_batch, dev_label_batch = tf.train.batch([dev_img2, dev_label], batch_size=dev_batch_size,
                                                 num_threads=num_threads, capacity=capacity)
 # one_hot编码
@@ -99,6 +101,7 @@ dev_labels_onehot_batch = tf.sparse_to_dense(dev_concated, tf.stack([dev_batch_s
 # ******************** 测试集数据读取 ****************************
 train_img, train_label = read_decode(train_file_path, epoch_num)
 train_img1 = tf.reshape(train_img, [image_height, image_width, image_channel])
+# 添加 标准化 模块
 train_img2 = tf.image.per_image_standardization(train_img1)  # 标准化
 
 train_img_batch, train_label_batch = tf.train.shuffle_batch([train_img2, train_label], batch_size=batch_size,
