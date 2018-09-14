@@ -64,7 +64,7 @@ dev_num = 4100
 keep = False
 
 # tensorboard+save
-now = '10.0-gray-1000epoch-2'
+now = '10.0-gray-test-1'
 root_logdir = "motor_dectector_record"
 tensorboard_dir = "/home/hongbin/data/{}/run-{}/tensorboard/".format(root_logdir, now)
 savedir = "/home/hongbin/data/{}/run-{}/save/".format(root_logdir, now)
@@ -421,7 +421,7 @@ print(tf_X.shape, tf_Y.shape, is_training)
 # TODO     3. 1s数据 C1+C2+S1+C3+S2+FU1+FU2+SOFTMAX       参数
 # ***********************1-卷积层1：  4个3*3的卷积核，步长为1, valid  输出 4*127*465******************************
 
-conv_layer_bn1 = conv_layer_bn('conv_layer_bn1', tf_X, 8, 7, strides=1, padding='VALID', is_bn_training=is_training,
+conv_layer_bn1 = conv_layer_bn('conv_layer_bn1', tf_X, 4, 7, strides=1, padding='VALID', is_bn_training=is_training,
                                epsilon=1e-3, decay=0.99)
 print('conv_layer_bn1: ', conv_layer_bn1)
 # # *******************2-卷积层2：  输入4*127*465   4个3*3的卷积核，步长为1, valid  输出 4*125*463******************
