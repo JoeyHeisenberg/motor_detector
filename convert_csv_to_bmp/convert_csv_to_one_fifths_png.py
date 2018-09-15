@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2018/7/31 14:26
 # @Author  : Li Hongbin
-# @File    : convert_csv_to_bmp.py
+# @File    : convert_csv_to_one_fifths_png.py
 # @Software: PyCharm
 # TODO 将电机信号csv文件根据FFT原理转换成时频特征图, 由于csv为 5s数据过长导致网络复杂，所以分成5份
 
