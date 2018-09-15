@@ -4,6 +4,7 @@
 # @Author  : Li Hongbin
 # @File    : matrices_data_processed_TFRecord.py
 # TODO  功能与 rgb_data_processed_TFRecord.py 相似 ，数据集为 1s_matrices_dataset
+# TODO  尝试  标准化， 归一化等 数据影响
 
 
 import os
@@ -30,22 +31,26 @@ for i in os.listdir(os.path.join(datadir, mode)):
         matrices_path = os.path.join(feature_path, name)
         matrices = np.loadtxt(matrices_path)
 
+        # # 归一化
+        # max_mat = np.max(matrices)
+        # min_mat = np.min(matrices)
+        #
+        # fin_matrices = (matrices - min_mat) / (max_mat - min_mat)
+
+        # 标准化
+        mean_mat = np.average(matrices)
+        deviation_mat = np.std(matrices)
+
+        fin_matrices = (matrices - mean_mat) / deviation_mat
+
         i_int = int(i)
 
         example = tf.train.Example(features=tf.train.Features(feature={
             "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[i_int])),
-            "img_raw": tf.train.Feature(bytes_list=tf.train.FloatList(value=[matrices]))
+            "matrices_raw": tf.train.Feature(bytes_list=tf.train.FloatList(value=[fin_matrices]))
         }))
         writer.write(example.SerializeToString())  # 序列化为字符串
 
 writer.close()
 
-# TODO 雅正resize顺序
-# img_path = r'F:\motor_sound_data\1s_processed\0\0-001-001.png'
-#
-# img = Image.open(img_path)
-# image_height = 129
-# image_width = 92
-# img = img.resize((image_width, image_height))
-# # img = img.resize((image_height, image_width))
-# img.show()
+
