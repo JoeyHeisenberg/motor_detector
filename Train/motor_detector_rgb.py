@@ -3,7 +3,7 @@
 # @Time    : 2018/9/14 13:50
 # @Author  : Li Hongbin
 # @File    : motor_detector_rgb.py
-# TODO      实现初步的overfitting
+# TODO      1. 实现初步自定义模块
 
 import tensorflow as tf
 import numpy as np
