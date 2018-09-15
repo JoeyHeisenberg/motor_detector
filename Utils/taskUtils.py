@@ -4,6 +4,7 @@
 # @Author  : Li Hongbin
 # @File    : taskUtils.py
 
+import os
 import tensorflow as tf
 import numpy as np
 import time
@@ -32,6 +33,27 @@ def read_decode(file_path1, epoch1):
     label1 = tf.cast(features['label'], tf.int32)
 
     return img2, label1
+
+
+def read_matrices(file_path1, epoch1):
+    """读取tfrecord的float矩阵和label"""
+    file_queue = tf.train.string_input_producer([file_path1], num_epochs=epoch1)  # 这里num_epochs 表示
+
+    reader = tf.TFRecordReader()
+    _, serialized_example = reader.read(file_queue)  # 返回文件名和文件
+    # 解析器tf.parse_single_example
+    # Configuration for parsing a fixed-length input feature.
+    features = tf.parse_single_example(serialized_example,
+                                       features={
+                                           'label': tf.FixedLenFeature([], tf.int64),
+                                           'matrices_raw': tf.FixedLenFeature([], tf.float32),
+                                       })
+
+    # 解码
+    matrices1 = tf.cast(features['matrices_raw'], tf.float32)
+    label1 = tf.cast(features['label'], tf.int32)
+
+    return matrices1, label1
 
 
 def logging(config1, logfile1, errorRate, epoch=0, delta_time=0, mode1='train'):
