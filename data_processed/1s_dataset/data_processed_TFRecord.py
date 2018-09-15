@@ -42,3 +42,13 @@ for i in os.listdir(os.path.join(datadir, mode)):
         writer.write(example.SerializeToString())  # 序列化为字符串
 
 writer.close()
+
+# TODO 雅正resize顺序
+# img_path = r'F:\motor_sound_data\1s_processed\0\0-001-001.png'
+#
+# img = Image.open(img_path)
+# image_height = 129
+# image_width = 92
+# img = img.resize((image_width, image_height))
+# # img = img.resize((image_height, image_width))
+# img.show()
