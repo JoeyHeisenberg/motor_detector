@@ -285,7 +285,7 @@ with tf.Session() as sess:
             print('ALL develop dataset need : ' + str(delta_time) + ' s')
             dev_epochER = dev_batchErrors.sum() / dev_step_num
             print('Accuracy :', dev_epochER)
-            logging(config, logfile, dev_epochER, epoch=1, delta_time=delta_time, mode1='develop')
+            logging(config, logfile, dev_epochER, epoch, delta_time=delta_time, mode1='develop')
             # ************************  develop ***************************************************
 
         train_writer.close()
