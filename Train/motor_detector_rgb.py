@@ -25,7 +25,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'   # 指定gtx 1080ti GPU可用
 # ****************** 用于控制所用显存*********************
 
 # tensorboard+save
-now = '1.0-rgb-200epoch-test1'
+now = '1.0-rgb-200epoch-test2'
 root_logdir = "motor_dectector_record"
 tensorboard_dir = "/home/hongbin/data/{}/run-{}/tensorboard/".format(root_logdir, now)
 savedir = "/home/hongbin/data/{}/run-{}/save/".format(root_logdir, now)
@@ -56,7 +56,7 @@ capacity = 4000
 min_after_dequeue = 3000  # need to less than capacity
 
 # lr = 1e-4
-lr = 1e-3
+lr = 1e-4
 prob = 0.5
 
 epoch_num = 1000
