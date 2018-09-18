@@ -11,7 +11,7 @@ import os                 # 路径需要
 from datetime import datetime
 import time
 
-from Utils import read_decode, logging, check_path_exists, count_params
+from Utils import read_decode, logging, check_path_exists, count_params, logging_total_acc
 from Models import conv_layer_bn, fully_connected_bn
 
 
@@ -25,7 +25,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'   # 指定gtx 1080ti GPU可用
 # ****************** 用于控制所用显存*********************
 
 # tensorboard+save
-now = '1.0-rgb-200epoch-test2'
+now = '1.0-rgb-200epoch-test3'
 root_logdir = "motor_dectector_record"
 tensorboard_dir = "/home/hongbin/data/{}/run-{}/tensorboard/".format(root_logdir, now)
 savedir = "/home/hongbin/data/{}/run-{}/save/".format(root_logdir, now)
@@ -52,8 +52,8 @@ batch_size = 40
 dev_batch_size = 50
 
 num_threads = 5   # cpu线程？？？
-capacity = 4000
-min_after_dequeue = 3000  # need to less than capacity
+capacity = 12100
+min_after_dequeue = 6000  # need to less than capacity
 
 # lr = 1e-4
 lr = 1e-4
@@ -240,9 +240,11 @@ with tf.Session() as sess:
 
             train_step_num = int(train_num / batch_size)
             train_batchErrors = np.zeros(train_step_num)
+            train_batchLoss = np.zeros(train_step_num)
 
             dev_step_num = int(dev_num / dev_batch_size)
             dev_batchErrors = np.zeros(dev_step_num)
+            dev_batchLoss = np.zeros(dev_step_num)
 
             # **********training ！！！ 每个epoch 都进行tensorboard记录， 每隔10 epoch 保存模型，只记录最近两个 *********
             start = time.time()
@@ -250,6 +252,7 @@ with tf.Session() as sess:
                 _, summary, los, acc = sess.run([train_step, merged, loss, accuracy],
                                                 feed_dict={is_training: True})
                 train_batchErrors[step] = acc  # 用于统计最后的Epoch er
+                train_batchLoss[step] = los
                 print("epoch", epoch+1, "step", step+1, "loss", los, "accuracy", acc)
 
                 if step == train_step_num-1:
@@ -267,14 +270,17 @@ with tf.Session() as sess:
             train_epochER = train_batchErrors.sum() / train_step_num
 
             logging(config, logfile, train_epochER, epoch, delta_time, mode1=mode)
+            logging_total_acc(logfile, train_epochER, 'train')
+
             # training*****************************************************************************
 
             # ************************  develop ***************************************************
             start = time.time()
             for step in range(dev_step_num):
-                summary, acc = sess.run([merged, accuracy],
-                                        feed_dict={is_training: False})
+                summary, acc, los = sess.run([merged, accuracy, loss],
+                                             feed_dict={is_training: False})
                 dev_batchErrors[step] = acc  # 用于统计最后的Epoch er
+                dev_batchLoss[step] = los
                 print("step: ", step + 1, 'accuracy: ', acc)
 
                 if step == dev_step_num-1:
@@ -286,6 +292,8 @@ with tf.Session() as sess:
             dev_epochER = dev_batchErrors.sum() / dev_step_num
             print('Accuracy :', dev_epochER)
             logging(config, logfile, dev_epochER, epoch, delta_time=delta_time, mode1='develop')
+            logging_total_acc(logfile, dev_epochER, 'dev')
+
             # ************************  develop ***************************************************
 
         train_writer.close()
