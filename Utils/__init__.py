@@ -4,4 +4,4 @@
 # @Author  : Li Hongbin
 # @File    : __init__.py
 
-from Utils.taskUtils import read_decode, read_matrices, logging, check_path_exists, count_params
+from Utils.taskUtils import read_decode, read_matrices, logging, check_path_exists, count_params, logging_total_acc

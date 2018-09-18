@@ -50,7 +50,7 @@ def read_matrices(file_path1, epoch1):
                                        })
 
     # 解码
-    matrices1 = tf.cast(features['matrices_raw'], tf.float32)
+    matrices1 = tf.cast(features['matrices_raw'], tf.float64)
     label1 = tf.cast(features['label'], tf.int32)
 
     return matrices1, label1
@@ -79,6 +79,17 @@ def logging(config1, logfile1, errorRate, epoch=0, delta_time=0, mode1='train'):
             myfile.write(str(config1)+'\n')
             myfile.write(str(time.strftime('%X %x %Z'))+'\n')
             myfile.write("development error rate:"+str(errorRate)+'\n')
+
+
+def logging_total_acc(logfile1, errorRate, mode1):
+    if mode1 == 'train':
+        logfile1 = logfile1 + '_train_total_acc'
+        with open(logfile1, 'a') as myfile:
+            myfile.write(str(errorRate)+'\n')
+    elif mode1 == 'dev':
+        logfile1 = logfile1 + '_dev_total_acc'
+        with open(logfile1, 'a') as myfile:
+            myfile.write(str(errorRate)+'\n')
 
 
 def check_path_exists(path):
