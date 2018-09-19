@@ -25,7 +25,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'   # 指定gtx 1080ti GPU可用
 # ****************** 用于控制所用显存*********************
 
 # tensorboard+save
-now = '1.0-rgb-200epoch-test3'
+now = '22222'
 root_logdir = "motor_dectector_record"
 tensorboard_dir = "/home/hongbin/data/{}/run-{}/tensorboard/".format(root_logdir, now)
 savedir = "/home/hongbin/data/{}/run-{}/save/".format(root_logdir, now)
@@ -150,7 +150,7 @@ with tf.name_scope('dropout1'):
 
 # ***********************   4-输出层                      ******************************
 
-out_w1 = tf.Variable(tf.truncated_normal([4, 2]))
+out_w1 = tf.Variable(tf.truncated_normal([4, 2], stddev=0.05))
 out_b1 = tf.Variable(tf.truncated_normal([2]))
 logits = tf.matmul(fully_dropout1, out_w1) + out_b1
 pred = tf.nn.softmax(logits)
