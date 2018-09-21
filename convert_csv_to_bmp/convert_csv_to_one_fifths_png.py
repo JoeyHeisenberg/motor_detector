@@ -11,8 +11,8 @@ import matplotlib.pylab as plt
 import os
 
 # ****************** 超参数设置 **************************
-source_path = r'F:\motor_sound_data\source'               # r 表示 取消\转义符
-processed_path = r'F:\motor_sound_data\1s_processed'
+source_path = r'F:\motor_sound_data_2.0\source'               # r 表示 取消\转义符
+processed_path = r'F:\motor_sound_data_2.0\1s_processed'
 
 framerate = 12000
 nfft = 256
