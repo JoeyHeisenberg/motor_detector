@@ -46,7 +46,7 @@ def read_matrices(file_path1, epoch1):
     features = tf.parse_single_example(serialized_example,
                                        features={
                                            'label': tf.FixedLenFeature([], tf.int64),
-                                           'matrices_raw': tf.FixedLenFeature([], tf.float32),
+                                           'matrices_raw': tf.FixedLenFeature([], tf.float64),
                                        })
 
     # 解码
