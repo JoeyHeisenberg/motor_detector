@@ -8,11 +8,11 @@
 
 import os
 import shutil
-# processed_path = r'F:\motor_sound_data\1s_processed'
-# s_dataset_path = r'F:\motor_sound_data\1s_dataset'
+processed_path = r'F:\motor_sound_data_2.0\1s_processed'
+s_dataset_path = r'F:\motor_sound_data_2.0\1s_dataset'
 
-processed_path = r'F:\motor_sound_data\1s_processed_matrices'
-s_dataset_path = r'F:\motor_sound_data\1s_matrices_dataset'
+# processed_path = r'F:\motor_sound_data_2.0\1s_processed_matrices'
+# s_dataset_path = r'F:\motor_sound_data_2.0\1s_matrices_dataset'
 
 for motorMode in os.listdir(processed_path):
     processed_motor_path = os.path.join(processed_path, motorMode)
