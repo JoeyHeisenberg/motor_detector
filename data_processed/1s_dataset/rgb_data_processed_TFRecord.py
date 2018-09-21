@@ -8,8 +8,8 @@ import tensorflow as tf
 from PIL import Image
 
 # ****************** 超参数设置 **************************
-datadir = 'F:\\motor_sound_data\\1s_dataset'
-mode = 'test'
+datadir = 'F:\\motor_sound_data_2.0\\1s_dataset'
+mode = 'train'
 filename = mode + '.tfrecords'
 writer_path = datadir + '\\save\\'
 file_path = writer_path + filename
