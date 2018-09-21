@@ -25,7 +25,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'   # 指定gtx 1080ti GPU可用
 # ****************** 用于控制所用显存*********************
 
 # tensorboard+save
-now = '22222'
+now = '1！！！'
 root_logdir = "motor_dectector_record"
 tensorboard_dir = "/home/hongbin/data/{}/run-{}/tensorboard/".format(root_logdir, now)
 savedir = "/home/hongbin/data/{}/run-{}/save/".format(root_logdir, now)
@@ -35,7 +35,7 @@ logfile = os.path.join(logdir, str(datetime.strftime(datetime.now(), '%Y-%m-%d-%
                                    + '.txt').replace(' ', '').replace('/', ''))
 
 # ****************** 超参数设置 **************************
-datadir = '/home/hongbin/data/motor_sound_data/1s_dataset/'
+datadir = '/home/hongbin/data/motor_sound_data_2.0/1s_dataset/'
 mode = 'train'
 filename = mode + '.tfrecords'
 writer_path = datadir + 'save/'
@@ -52,7 +52,7 @@ batch_size = 40
 dev_batch_size = 50
 
 num_threads = 5   # cpu线程？？？
-capacity = 12100
+capacity = 11900
 min_after_dequeue = 6000  # need to less than capacity
 
 # lr = 1e-4
@@ -62,7 +62,7 @@ prob = 0.5
 epoch_num = 1000
 grad_clip = 1   # 'set the threshold of gradient clipping, -1 denotes no clipping'
 
-train_num = 12100
+train_num = 11900
 test_num = 4000
 dev_num = 4100
 
