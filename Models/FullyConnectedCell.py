@@ -7,6 +7,7 @@
 import tensorflow as tf
 from math import sqrt
 
+
 def variable_he_initialization_with_weight_2loss(shape, wl=0.):
     """
     使用He_intialization 初始化参数 ，用于全连接层 ,variable_with_weight_2loss 计算网络weight的 l2 loss

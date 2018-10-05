@@ -4,5 +4,5 @@
 # @Author  : Li Hongbin
 # @File    : __init__.py
 
-from Models.CNNCell import conv_layer_bn
+from Models.CNNCell import conv_layer_bn, conv_layer_bn_1_dimension
 from Models.FullyConnectedCell import fully_connected_bn
