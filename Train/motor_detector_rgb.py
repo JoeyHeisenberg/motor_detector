@@ -3,7 +3,8 @@
 # @Time    : 2018/9/14 13:50
 # @Author  : Li Hongbin
 # @File    : motor_detector_rgb.py
-# TODO      1. 实现初步自定义模块
+# TODO 1-dimentional CNN   C1+S1+C2+C3+FLATTEN+FU1+FU2
+
 
 import tensorflow as tf
 import numpy as np
@@ -12,20 +13,20 @@ from datetime import datetime
 import time
 
 from Utils import read_decode, logging, check_path_exists, count_params, logging_total_acc
-from Models import conv_layer_bn, fully_connected_bn
+from Models import conv_layer_bn_1_dimension, conv_layer_bn, fully_connected_bn
 
 
 # ****************** 用于控制所用显存*********************
 config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.1
+# config.gpu_options.per_process_gpu_memory_fraction = 0.4
 config.gpu_options.allow_growth = True
 # 用于选择某个显卡进行训练
-# os.environ["CUDA_VISIBLE_DEVICES"] = '1'   # 指定M4000GPU可用
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'   # 指定gtx 1080ti GPU可用
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'   # 指定M4000GPU可用
+# os.environ["CUDA_VISIBLE_DEVICES"] = '0'   # 指定gtx 1080ti GPU可用
 # ****************** 用于控制所用显存*********************
 
 # tensorboard+save
-now = '1！！！'
+now = 'rgb_test12-4.0-2'
 root_logdir = "motor_dectector_record"
 tensorboard_dir = "/home/hongbin/data/{}/run-{}/tensorboard/".format(root_logdir, now)
 savedir = "/home/hongbin/data/{}/run-{}/save/".format(root_logdir, now)
@@ -35,13 +36,13 @@ logfile = os.path.join(logdir, str(datetime.strftime(datetime.now(), '%Y-%m-%d-%
                                    + '.txt').replace(' ', '').replace('/', ''))
 
 # ****************** 超参数设置 **************************
-datadir = '/home/hongbin/data/motor_sound_data_2.0/1s_dataset/'
+datadir = '/home/hongbin/data/motor_sound_data_4.0/1s_dataset/'
 mode = 'train'
 filename = mode + '.tfrecords'
 writer_path = datadir + 'save/'
 train_file_path = writer_path + filename
 
-dev_file_path = datadir + 'save/' + 'develop.tfrecords'
+test_file_path = datadir + 'save/' + 'test.tfrecords'
 
 image_height = 129   # 先height再width
 image_width = 92
@@ -50,24 +51,25 @@ image_channel = 3  # rgb channels
 
 batch_size = 40
 dev_batch_size = 50
+test_batch_size = 50
 
 num_threads = 5   # cpu线程？？？
 capacity = 11900
 min_after_dequeue = 6000  # need to less than capacity
 
 # lr = 1e-4
-lr = 1e-4
+# lr = 1e-4
 prob = 0.5
 
 epoch_num = 1000
 grad_clip = 1   # 'set the threshold of gradient clipping, -1 denotes no clipping'
 
-train_num = 11900
-test_num = 4000
-dev_num = 4100
+train_num = 15600
+test_num = 3800
 
-keep = False
 
+# keep = False
+keep = True
 # for logging
 config = {'No.': now,
           'trainable params': 0,
@@ -76,25 +78,23 @@ config = {'No.': now,
           'num_class': '2',
           'activation': 'leaky_relu',
           'optimizer': 'adam',
-          'learning rate': lr,
           'batch size': batch_size}
 # ****************** 超参数设置 **************************
 
-
-# ******************** 开发集数据读取 ****************************
-dev_img, dev_label = read_decode(dev_file_path, epoch_num)
-dev_img1 = tf.reshape(dev_img, [image_height, image_width, image_channel])
+# ******************** 测试集数据读取 ****************************
+test_img, test_label = read_decode(test_file_path, epoch_num)
+test_img1 = tf.reshape(test_img, [image_height, image_width, image_channel])
 # 添加 标准化 模块
-dev_img2 = tf.image.per_image_standardization(dev_img1)  # 标准化
+test_img2 = tf.image.per_image_standardization(test_img1)  # 标准化
 
-dev_img_batch, dev_label_batch = tf.train.batch([dev_img2, dev_label], batch_size=dev_batch_size,
-                                                num_threads=num_threads, capacity=capacity)
+test_img_batch, test_label_batch = tf.train.batch([test_img2, test_label], batch_size=test_batch_size,
+                                                  num_threads=num_threads, capacity=capacity)
 # one_hot编码
-dev_labels_batch = tf.expand_dims(dev_label_batch, 1)
-dev_indices = tf.expand_dims(tf.range(0, dev_batch_size, 1), 1)
-dev_concated = tf.concat([dev_indices, dev_labels_batch], 1)
+test_labels_batch = tf.expand_dims(test_label_batch, 1)
+test_indices = tf.expand_dims(tf.range(0, test_batch_size, 1), 1)
+test_concated = tf.concat([test_indices, test_labels_batch], 1)
 # stack()保证[batch_size, 2]是tensor
-dev_labels_onehot_batch = tf.sparse_to_dense(dev_concated, tf.stack([dev_batch_size, 2]), 1.0, 0.0)
+test_labels_onehot_batch = tf.sparse_to_dense(test_concated, tf.stack([test_batch_size, 2]), 1.0, 0.0)
 # ******************** 数据读取 *********************************
 
 
@@ -120,8 +120,9 @@ train_labels_onehot_batch = tf.sparse_to_dense(train_concated, tf.stack([batch_s
 # 输入层
 with tf.name_scope('input'):
     is_training = tf.placeholder(tf.bool)
-    tf_X = tf.cond(is_training, lambda: train_img_batch, lambda: dev_img_batch)
-    tf_Y = tf.cond(is_training, lambda: train_labels_onehot_batch, lambda: dev_labels_onehot_batch)
+    lr = tf.placeholder(tf.float32)
+    tf_X = tf.cond(is_training, lambda: train_img_batch, lambda: test_img_batch)
+    tf_Y = tf.cond(is_training, lambda: train_labels_onehot_batch, lambda: test_labels_onehot_batch)
     tf.summary.image('input_image', tf_X, 10)
 
 print(tf_X.shape, tf_Y.shape, is_training)
@@ -130,29 +131,40 @@ print(tf_X.shape, tf_Y.shape, is_training)
 
 # ***********************  1-卷积层1：                    ******************************
 
-conv_layer_bn1 = conv_layer_bn('conv_layer_bn1', tf_X, 4, 7, strides=1, padding='VALID', is_bn_training=is_training,
-                               epsilon=1e-3, decay=0.99)
+conv_layer_bn1 = conv_layer_bn_1_dimension('conv_layer_bn1', tf_X, 32, 7, strides=2, padding='VALID',
+                                           is_bn_training=is_training, epsilon=1e-3, decay=0.99)
 print('conv_layer_bn1: ', conv_layer_bn1)
-
-# ***********************   2-将卷积层输出扁平化处理         ******************************
-
+# ***********************  2-池化层1:                    ******************************
+with tf.name_scope('max_pool1'):
+    max_pool1 = tf.nn.max_pool(conv_layer_bn1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID')
+print('max_pool1: ', max_pool1)
+# ***********************  3-卷积层2：                    ******************************
+conv_layer_bn2 = conv_layer_bn('conv_layer_bn2', max_pool1, 16, 5, strides=1, padding='VALID',
+                               is_bn_training=is_training, epsilon=1e-3, decay=0.99)
+print('conv_layer_bn2: ', conv_layer_bn2)
+# ***********************  4-卷积层2：                    ******************************
+conv_layer_bn3 = conv_layer_bn('conv_layer_bn3', conv_layer_bn2, 16, 5, strides=1, padding='VALID',
+                               is_bn_training=is_training, epsilon=1e-3, decay=0.99)
+print('conv_layer_bn3: ', conv_layer_bn3)
+# ***********************   5-将卷积层输出扁平化处理         ******************************
 with tf.name_scope('flat'):
-    orig_shape = conv_layer_bn1.get_shape().as_list()
-    flat = tf.reshape(conv_layer_bn1, shape=[-1, orig_shape[1]*orig_shape[2]*orig_shape[3]])
+    orig_shape = conv_layer_bn3.get_shape().as_list()
+    flat = tf.reshape(conv_layer_bn3, shape=[-1, orig_shape[1]*orig_shape[2]*orig_shape[3]])
 print('flat: ', flat)
-
-# ***********************   3-全连接层1:                   ******************************
-
-fully_connected_bn1 = fully_connected_bn('fully_1', flat, 4, is_bn_training=is_training, epsilon=1e-3,
+# ***********************   6-全连接层1:                   ******************************
+fully_connected_bn1 = fully_connected_bn('fully_1', flat, 50, is_bn_training=is_training, epsilon=1e-3,
                                          decay=0.99, wl=0.004)
 with tf.name_scope('dropout1'):
     fully_dropout1 = tf.contrib.layers.dropout(fully_connected_bn1, keep_prob=prob, is_training=is_training)
-
-# ***********************   4-输出层                      ******************************
-
-out_w1 = tf.Variable(tf.truncated_normal([4, 2], stddev=0.05))
+# ***********************   7-全连接层2:                   ******************************
+fully_connected_bn2 = fully_connected_bn('fully_2', fully_dropout1, 10, is_bn_training=is_training, epsilon=1e-3,
+                                         decay=0.99, wl=0.004)
+with tf.name_scope('dropout2'):
+    fully_dropout2 = tf.contrib.layers.dropout(fully_connected_bn2, keep_prob=prob, is_training=is_training)
+# ***********************   8-输出层                      ******************************
+out_w1 = tf.Variable(tf.truncated_normal([10, 2], stddev=0.05))
 out_b1 = tf.Variable(tf.truncated_normal([2]))
-logits = tf.matmul(fully_dropout1, out_w1) + out_b1
+logits = tf.matmul(fully_dropout2, out_w1) + out_b1
 pred = tf.nn.softmax(logits)
 
 # loss
@@ -200,6 +212,7 @@ accuracy_summary = tf.summary.scalar('accuracy', accuracy)
 merged = tf.summary.merge_all()
 # 写到指定的磁盘路径中
 train_writer = tf.summary.FileWriter(tensorboard_dir + '/train', tf.get_default_graph())
+
 test_writer = tf.summary.FileWriter(tensorboard_dir + '/test')
 
 
@@ -242,15 +255,22 @@ with tf.Session() as sess:
             train_batchErrors = np.zeros(train_step_num)
             train_batchLoss = np.zeros(train_step_num)
 
-            dev_step_num = int(dev_num / dev_batch_size)
-            dev_batchErrors = np.zeros(dev_step_num)
-            dev_batchLoss = np.zeros(dev_step_num)
+            test_step_num = int(test_num / test_batch_size)
+            test_batchErrors = np.zeros(test_step_num)
+            test_batchLoss = np.zeros(test_step_num)
 
             # **********training ！！！ 每个epoch 都进行tensorboard记录， 每隔10 epoch 保存模型，只记录最近两个 *********
             start = time.time()
+            # if epoch > 20:
+            #     learning_r = 1e-6
+            # else:
+            #     learning_r = 1e-4
+            learning_r = 1e-6
+
             for step in range(train_step_num):
                 _, summary, los, acc = sess.run([train_step, merged, loss, accuracy],
-                                                feed_dict={is_training: True})
+                                                feed_dict={is_training: True,
+                                                           lr: learning_r})
                 train_batchErrors[step] = acc  # 用于统计最后的Epoch er
                 train_batchLoss[step] = los
                 print("epoch", epoch+1, "step", step+1, "loss", los, "accuracy", acc)
@@ -274,27 +294,27 @@ with tf.Session() as sess:
 
             # training*****************************************************************************
 
-            # ************************  develop ***************************************************
+            # # ************************  test ***************************************************
             start = time.time()
-            for step in range(dev_step_num):
+            for step in range(test_step_num):
                 summary, acc, los = sess.run([merged, accuracy, loss],
                                              feed_dict={is_training: False})
-                dev_batchErrors[step] = acc  # 用于统计最后的Epoch er
-                dev_batchLoss[step] = los
+                test_batchErrors[step] = acc  # 用于统计最后的Epoch er
+                test_batchLoss[step] = los
                 print("step: ", step + 1, 'accuracy: ', acc)
 
-                if step == dev_step_num-1:
-                    test_writer.add_summary(summary, epoch+1)
+                if step == test_step_num - 1:
+                    test_writer.add_summary(summary, epoch + 1)
 
             end = time.time()
             delta_time = end - start
-            print('ALL develop dataset need : ' + str(delta_time) + ' s')
-            dev_epochER = dev_batchErrors.sum() / dev_step_num
-            print('Accuracy :', dev_epochER)
-            logging(config, logfile, dev_epochER, epoch, delta_time=delta_time, mode1='develop')
-            logging_total_acc(logfile, dev_epochER, 'dev')
+            print('ALL test dataset need : ' + str(delta_time) + ' s')
+            test_epochER = test_batchErrors.sum() / test_step_num
+            print('Accuracy :', test_epochER)
+            logging(config, logfile, test_epochER, epoch, delta_time=delta_time, mode1='test')
+            logging_total_acc(logfile, test_epochER, 'dev')
 
-            # ************************  develop ***************************************************
+            # # ************************  test ***************************************************
 
         train_writer.close()
         test_writer.close()  # tensorboard
@@ -308,3 +328,4 @@ with tf.Session() as sess:
         coord.request_stop()
         coord.join(thread)
 # ******************** Session 部分 ****************************
+
