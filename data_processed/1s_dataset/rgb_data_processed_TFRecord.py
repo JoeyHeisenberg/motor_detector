@@ -39,6 +39,8 @@ for i in os.listdir(os.path.join(datadir, mode)):
         i_int = int(i)
         k = k + 1
         img_raw = img.tobytes()         # 将图片转化成byte格式（二进制数据）
+        print(img_path)
+        print(k)
         example = tf.train.Example(features=tf.train.Features(feature={
             "order": tf.train.Feature(int64_list=tf.train.Int64List(value=[k])),
             "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[i_int])),
