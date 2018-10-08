@@ -8,13 +8,16 @@ import tensorflow as tf
 from PIL import Image
 
 # ****************** 超参数设置 **************************
-datadir = 'F:\\motor_sound_data_2.0\\1s_dataset'
-mode = 'train'
-filename = mode + '.tfrecords'
+datadir = 'F:\\motor_sound_data_4.0\\1s_dataset'
+mode = 'test'
+# filename = mode + '.tfrecords'
+filename = 'test_for_order.tfrecords'
 writer_path = datadir + '\\save\\'
 file_path = writer_path + filename
 image_height = 129
 image_width = 92
+
+k = 0
 # ****************** 超参数设置 **************************
 
 # ****************** TFrecord **************************
@@ -34,8 +37,10 @@ for i in os.listdir(os.path.join(datadir, mode)):
         img = Image.merge('RGB', (r, g, b))  # 合并三通道
 
         i_int = int(i)
+        k = k + 1
         img_raw = img.tobytes()         # 将图片转化成byte格式（二进制数据）
         example = tf.train.Example(features=tf.train.Features(feature={
+            "order": tf.train.Feature(int64_list=tf.train.Int64List(value=[k])),
             "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[i_int])),
             "img_raw": tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))
         }))
